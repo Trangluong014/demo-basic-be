@@ -19,10 +19,20 @@ router.get("/", function (req, res, next) {
 });
 
 /* GET students. */
-router.get("/:id", function (req, res, next) {
+const db = { data: ["tuan", "trung", "thanh", "thuy"] };
+router.get("/", function (req, res, next) {
   // const params = req.params;
   // console.log(params);
-  return res.status(200).send({ data });
+  return res.status(200).send(db);
+});
+
+/* GET students. */
+router.get("/:number", function (req, res, next) {
+  const number = req.params;
+  const select = db.data[number];
+  // const params = req.params;
+  // console.log(params);
+  return res.status(200).send({ data: select });
 });
 
 module.exports = router;
