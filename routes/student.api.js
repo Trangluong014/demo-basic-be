@@ -49,15 +49,15 @@ router.get("/", function (req, res, next) {
   try {
     let startIndex;
     let endIndex;
-    if (page * limit <= db.length - 1) {
+    if (page * limit <= db.length) {
       startIndex = (page - 1) * limit;
       endIndex = page * limit;
       message = `Get student list by page ${page} with limit of ${limit}`;
-    } else if ((page - 1) * limit <= db.length - 1) {
+    } else if ((page - 1) * limit <= db.length) {
       startIndex = (page - 1) * limit;
-      endIndex = db.length - 1;
+      endIndex = db.length;
       message = `Get student list by page ${page} with limit of ${limit}`;
-    } else if ((page - 1) * limit > db.length - 1) {
+    } else if ((page - 1) * limit > db.length) {
       startIndex = db.length;
       endIndex = db.length;
       message = `Page is greater than database`;
