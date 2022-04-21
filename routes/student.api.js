@@ -83,7 +83,8 @@ router.post("/add", function (req, res, next) {
       message = `${index} Username is existed`;
     } else {
       message = `${index} add student`;
-      db = JSON.stringify(db.push(body));
+      db = db.push(body);
+      db = JSON.stringify(db);
       fs.writeFile("./db.json", db, (err) => {});
     }
   } catch (error) {
