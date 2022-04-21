@@ -2,7 +2,10 @@ const express = require("express");
 const router = express.Router();
 const fs = require("fs");
 const { resourceLimits } = require("worker_threads");
-const sendResponse = require("../helpers/sendResponse");
+const {
+  sendResponse,
+  generateRandomHexString,
+} = require("../helpers/sendResponse");
 /* GET students. */
 
 const loadData = () => {
@@ -72,25 +75,119 @@ router.get("/", function (req, res, next) {
 });
 
 router.post("/add", function (req, res, next) {
-  let db = loadData();
-  const body = req.body;
   let message = "";
   let index;
   try {
-    index = db.map((e) => e.email).indexOf(body.email);
-    // message = `${index}`;
-    if (index !== -1) {
-      message = `${index} Username is existed`;
-    } else {
-      message = `${index} add student`;
-      db = db.push(body);
-      db = JSON.stringify(db);
-      fs.writeFile("./db.json", db, (err) => {});
+    const { name, email, password, age } = req.body;
+    if (!name || !email || !password || !age) {
+      const error = new Error("Missing infor");
+      error.statusCode = 400;
+      throw error;
+    }
+    {
+      const db = loadData();
+      index = db.map((e) => e.email).indexOf(email);
+      if (index !== -1) {
+        const error = new Error("User is already existed");
+        error.statusCode = 400;
+        throw error;
+      } else {
+        message = `${index} add student`;
+        const studentObj = {
+          id: generateRandomHexString(24),
+          name,
+          email,
+          password,
+          __v: 0,
+          age: parseInt(age),
+        };
+        newDb = [...db, studentObj];
+        addDb = JSON.stringify(newDb);
+        fs.writeFile("./db.json", addDb, (err) => {});
+        return sendResponse(200, {}, message, res, next);
+      }
     }
   } catch (error) {
-    console.log(error);
+    next(error);
   }
+});
 
-  return sendResponse(200, db, message, res, next);
+router.put("/", function (req, res, next) {
+  try {
+    const { email, password, newPassword } = req.body;
+    if (!email || !password || !newPassword) {
+      const error = new Error("Missing infor put");
+      error.statusCode = 400;
+      throw error;
+    }
+    {
+      if (password === newPassword) {
+        const error = new Error(
+          "New password is the same with current password. Please change "
+        );
+        error.statusCode = 400;
+        throw error;
+      }
+      {
+        let db = loadData();
+        index = db.map((e) => e.email).indexOf(email);
+        if (index === -1) {
+          const error = new Error("User not found");
+          error.statusCode = 400;
+          throw error;
+        }
+        {
+          if (db[index].password !== password) {
+            const error = new Error("Password is not match");
+            error.statusCode = 400;
+            throw error;
+          } else {
+            message = `${index} change password`;
+            db[index].password = newPassword;
+            let addData = JSON.stringify(db);
+            fs.writeFile("./db.json", addData, (err) => {});
+            return sendResponse(200, {}, message, res, next);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/", function (req, res, next) {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      const error = new Error("Missing infor delete");
+      error.statusCode = 400;
+      throw error;
+    }
+    {
+      let db = loadData();
+      index = db.map((e) => e.email).indexOf(email);
+      if (index === -1) {
+        const error = new Error("User not found");
+        error.statusCode = 400;
+        throw error;
+      }
+      {
+        if (db[index].password !== password) {
+          const error = new Error("Password is not match");
+          error.statusCode = 400;
+          throw error;
+        } else {
+          message = `${index} delete`;
+          db.splice(index, 1);
+          const addData = JSON.stringify(db);
+          fs.writeFile("./db2.json", addData, (err) => {});
+          return sendResponse(200, {}, message, res, next);
+        }
+      }
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 module.exports = router;
