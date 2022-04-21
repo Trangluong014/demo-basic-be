@@ -56,3 +56,22 @@ Build a simple layout to display server response also UI for making search reque
 - When click , make a call to http://localhost:5000/students\studentIDofTheClicked"
 - Display the result in your UI of choice
 - Beautify your first **Full-stack Web Application**
+
+## Requirement
+
+For examples db=[1,2,3,4,5,6,7,8,9,10,11,12]
+
+1. Route return all students list with limit 10 student per request and able to use page query to navigate more. ('host/students', 10 students info [1..10] ... 'host/students?page=2', 10 students info [11...12], 'host/students?page=3', [..]). Could also change limit. (host/students?limit=2&page=4, [7,8]). (R)
+2. Route add new students into db if receive {name, email, password}. Email have to be unique otherwise send back error response message "User email is existed". Apend into db , not replace. (C)
+3. Route update password of student if receive correct {email ,password} and {newPassword}. If email can not be found in db, response with error message "User not found". If email found but password is not match, response with error message "Password is not match". Update password = newPassword in database (db.json). (U)
+4. Route delete student from database if receive correct {email,password}. (D)
+
+- Rocket : Whenever student is created, we also create a random hexstring as id for that student and sasve it in the db. Hint:
+  const crypto = require("crypto");
+  utilsHelper.generateRandomHexString = (len) => {
+  return crypto
+  .randomBytes(Math.ceil(len / 2))
+  .toString("hex") // convert to hexadecimal format
+  .slice(0, len)
+  .toUpperCase(); // return required number of characters
+  };
