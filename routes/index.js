@@ -1,5 +1,5 @@
 const express = require("express");
-const sendResponse = require("../helpers/sendResponse");
+const { sendResponse } = require("../helpers/utils");
 
 const router = express.Router();
 
@@ -24,17 +24,11 @@ router.post("/reqdemo", function (req, res, next) {
   const body = req.body;
   return sendResponse(200, { params, query, body }, "request demo", res, next);
 });
-router.post("/reqdemo/:tenbien/:tuine", function (req, res, next) {
-  const params = req.params;
-  const query = req.query;
-  const body = req.body;
-  return sendResponse(200, { params, query, body }, "request demo", res, next);
-});
 
 const studentRoutes = require("./student.api.js");
 router.use("/students", studentRoutes);
 
-// const userRoutes = require("./user.api.js");
-// router.use("/users", userRoutes);
+const userRoutes = require("./user.api.js");
+router.use("/users", userRoutes);
 
 module.exports = router;

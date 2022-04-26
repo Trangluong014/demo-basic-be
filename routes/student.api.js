@@ -1,11 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const fs = require("fs");
-const { resourceLimits } = require("worker_threads");
-const {
-  sendResponse,
-  generateRandomHexString,
-} = require("../helpers/sendResponse");
+
+const { sendResponse, generateRandomHexString } = require("../helpers/utils");
+const authentication = require("../middlewares/auth");
 /* GET students. */
 
 const loadData = () => {
@@ -18,6 +16,11 @@ const loadData = () => {
 //   const db = loadData();
 //   return sendResponse(200, db, "Student list", res, next);
 // });
+
+router.get("/protected", authentication, (req, res, next) => {
+  console.log("and here", req.userId);
+  res.send("success");
+});
 
 router.post("/", function (req, res, next) {
   // const db = loadData();
@@ -190,4 +193,5 @@ router.delete("/", function (req, res, next) {
     next(error);
   }
 });
+
 module.exports = router;
