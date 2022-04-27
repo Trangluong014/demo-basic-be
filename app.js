@@ -7,6 +7,7 @@ const logger = require("morgan");
 const cors = require("cors");
 const indexRouter = require("./routes/index");
 const mongoose = require("mongoose");
+const createUser = require("./createUser");
 
 const app = express();
 app.use(logger("dev"));
@@ -18,7 +19,10 @@ app.use(cors());
 
 mongoose
   .connect("mongodb://localhost:27017/school")
-  .then(() => console.log("Mongoose 27017 connected"))
+  .then(
+    () => console.log("Mongoose 27017 connected")
+    // , createUser(100)
+  )
   .catch((err) => console.log(err));
 
 app.use("/api", indexRouter);

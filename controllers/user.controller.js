@@ -14,6 +14,12 @@ userController.createUserByEmailPassword = async (req, res, next) => {
     }
     const found = await User.findOne({ email });
     if (found) {
+      if (found.isDeleted === true) {
+        throwException(
+          "Account has been deleted, do you want to recover it?",
+          400
+        );
+      }
       throwException("User email already register", 400);
     }
     const salt = await bcrypt.genSalt(10);
@@ -50,9 +56,34 @@ userController.loginWithEmailPassword = async (req, res, next) => {
 };
 
 userController.getListOfAllUser = async (req, res, next) => {
+  //limit, pagination
+  //total data length
+  //sorting, order
+  //searching, filter
+
+  let { page, limit } = req.query;
+  page = parseInt(page) || 1;
+  limit = parseInt(limit) || 10;
+  const offset = limit * (page - 1);
   try {
-    const studentList = await User.find();
-    sendResponse(200, studentList, "List of all User", res, next);
+    const count = await User.countDocuments({ isDeleted: false });
+    const usersList = await User.find({ isDeleted: False })
+      .skip(offset)
+      .limit(limit);
+    const totalPage = Math.ceil(count / limit);
+
+    sendResponse(
+      200,
+      {
+        usersList,
+        amount: usersList.length,
+        total: count,
+        totalPage: totalPage,
+      },
+      "List of all User",
+      res,
+      next
+    );
   } catch (error) {
     next(error);
   }
@@ -61,7 +92,7 @@ userController.getListOfAllUser = async (req, res, next) => {
 userController.getUserById = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const selectedUser = await User.findById(id);
+    const selectedUser = await User.findOne({ _id: id, isDeleted: true });
     if (!selectedUser) {
       throwException("User ID not found", 400);
     }
@@ -106,7 +137,7 @@ userController.deleteOwnAccount = async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throwException("User ID not found", 400);
     }
-    deleteUser = await User.findByIdAndDelete(id);
+    deleteUser = await User.findByIdAndUpdate(id, { isDeleted: true });
     sendResponse(200, deleteUser, `Delete user with id ${id}`, res, next);
   } catch (error) {
     next(error);
@@ -120,7 +151,7 @@ userController.deleteWithId = async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       throwException("User ID not found", 400);
     }
-    deleteUser = await User.findByIdAndDelete(id);
+    deleteUser = await User.findByIdAndUpdate(id, { isDeleted: true });
     sendResponse(200, deleteUser, `Delete user with id ${id}`, res, next);
   } catch (error) {
     next(error);

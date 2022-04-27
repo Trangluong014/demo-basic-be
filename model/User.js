@@ -7,11 +7,18 @@ const userSchema = mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
+  isDeleted: { type: Boolean, default: false },
 });
 //Add method
 //❌ arrow function in object can't access to this
 //✅ use normal function instead for object methods
 
+userSchema.methods.toJSON = function () {
+  const obj = this._doc;
+  delete obj.password;
+  delete obj.isDeleted;
+  return obj;
+};
 userSchema.methods.generateAccessToken = function () {
   const accessToken = jwt.sign({ _id: this._id }, JWT_SECRET_KEY, {
     expiresIn: "1d",
